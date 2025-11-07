@@ -813,8 +813,8 @@ void createHAEntities()
   {char name[] = "Ph Pump";
   sprintf(topic, "%s/Meas2", roottopic);
   char JSEntity[] = " \
-    \"payload_on\": \"{'PhPump': '1'}\", \
-    \"payload_off\": \"{'PhPump': '0'}\", \
+    \"payload_on\": \"{PhPump: 1}\", \
+    \"payload_off\": \"{PhPump: 0}\", \
     \"value_template\": \"{{ value_json.IO | int | bitwise_and(64) == 64 }}\", \
     \"state_on\": \"True\", \
     \"state_off\": \"False\", \
@@ -1647,10 +1647,9 @@ sprintf(commandtopic, "%s/SVAPI", roottopic);
  {char name[] = "JSON Command";
   sprintf(topic, "%s", commandtopic);
   char JSEntity[] = " \
-  \"command_template\": \"{{ value }} \", \
+  \"command_template\": \"{{ value }}\", \
   \"unique_id\": \"poolmaster_jsoncommand\", \
   \"icon\": \"mdi:code-json\", \
   ";
   createHAEntitie(entitytype, name, topic, JSEntity, JScommon, hatopic, commandtopic);}
-
 }
