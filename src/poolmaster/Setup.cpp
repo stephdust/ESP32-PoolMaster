@@ -59,6 +59,7 @@ bool PoolMaster_MQTTReady = false;      // Is MQTT Connected
 bool PoolMaster_NTPReady = false;      // Is NTP Connected
 bool PoolMaster_FullyLoaded = false;      // At startup gives time for everything to start before exiting Nextion's splash screen
 
+bool EXT_ADS1115 = false;           // by default, use analog pH/Orp
 
 // Queue object to store incoming JSON commands (up to 10)
 QueueHandle_t queueIn;
@@ -226,7 +227,9 @@ void setup()
   Wire.begin(I2C_SDA,I2C_SCL);
 
   Wire.beginTransmission(EXT_ADS1115_ADDR); // search for loulou board
-  if (Wire.endTransmission() == 0) EXT_ADS1115 = true;
+  if (Wire.endTransmission() == 0)
+        EXT_ADS1115 = true;
+  else  EXT_ADS1115 = false;
 
   // Initialize configuration manager
   // List of parameters are in PoolMaster.h, in the ParamID enum

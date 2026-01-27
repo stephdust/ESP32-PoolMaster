@@ -46,9 +46,6 @@ void unlockI2C();
 //We have here two sections of code here of which only one will be compiled depending on the
 //configuration 
 
-
-bool EXT_ADS1115 = false; // by default, use analog pH/Orp
-
 void AnalogInit()
 {
   if (EXT_ADS1115) {
@@ -100,8 +97,6 @@ void AnalogPoll(void *pvParameters)
 
     lockI2C();
     adc_int.update();
-    if (EXT_ADS1115) adc_ext.update();
-
     if(adc_int.ready()){                              // all conversions done ?
         if (!EXT_ADS1115) {
           orp_sensor_value = adc_int.readFilter(0) ;    // ORP sensor current value
@@ -112,7 +107,9 @@ void AnalogPoll(void *pvParameters)
         adc_int.start();
     }
 
-    if ((EXT_ADS1115) && (adc_ext.ready())) {
+    if (EXT_ADS1115) {
+      adc_ext.update();
+      if (adc_ext.ready()) {
       // As an int is 32 bits long for ESP32 and as the ADS1115 is wired in differential, we have to manage
       // negative voltage as follow
         orp_sensor_value = adc_ext.readFilter(0);
@@ -120,6 +117,7 @@ void AnalogPoll(void *pvParameters)
         ph_sensor_value = adc_ext.readFilter(1);
         if (ph_sensor_value >= 32768) ph_sensor_value= ph_sensor_value - 65536;      // pH sensor current value
         adc_ext.start();  
+      }
     }
 
     //Ph
