@@ -106,8 +106,9 @@ void AnalogPoll(void *pvParameters)
         if (!EXT_ADS1115) {
           orp_sensor_value = adc_int.readFilter(0) ;    // ORP sensor current value
           ph_sensor_value  = adc_int.readFilter(1) ;    // pH sensor current value
+          psi_sensor_value = adc_int.readFilter(2) ;    // psi sensor current value
         }
-        psi_sensor_value = adc_int.readFilter(2) ;    // psi sensor current value
+        else psi_sensor_value = adc_int.readFilter(0) ;    // psi sensor current value
         adc_int.start();
     }
 

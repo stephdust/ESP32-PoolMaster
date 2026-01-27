@@ -225,7 +225,7 @@ void setup()
   // Start I2C for ADS1115 and status lights through PCF8574A
   Wire.begin(I2C_SDA,I2C_SCL);
 
-  Wire.beginTransmission(0x49); // search for loulou board
+  Wire.beginTransmission(EXT_ADS1115_ADDR); // search for loulou board
   if (Wire.endTransmission() == 0) EXT_ADS1115 = true;
 
   // Initialize configuration manager
