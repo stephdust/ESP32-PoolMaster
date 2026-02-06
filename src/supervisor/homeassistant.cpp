@@ -1370,8 +1370,8 @@ void createHAEntities()
   char name[] = "pH Pump Flow Rate (L/h)";
   sprintf(topic, "%s/Set5", roottopic);
   char JSEntity[] = " \
-  \"command_template\": \"{ \\\"pHPumpFR\\\": {{ value }} }\", \
-  \"min\": \"0.1\", \
+  \"command_template\": \"{ pHPumpFR: {{value}} }\", \
+  \"min\": \"0.5\", \
   \"max\": \"5\", \
   \"mode\": \"slider\", \
   \"step\": \"0.1\", \
@@ -1388,8 +1388,8 @@ void createHAEntities()
   char name[] = "Chl Pump Flow Rate (L/h)";
   sprintf(topic, "%s/Set5", roottopic);
   char JSEntity[] = " \
-  \"command_template\": \"{ \\\"ChlPumpFR\\\": {{ value }} }\", \
-  \"min\": \"0.1\", \
+  \"command_template\": \"{ ChlPumpFR: {{value}} }\", \
+  \"min\": \"0.5\", \
   \"max\": \"5\", \
   \"mode\": \"slider\", \
   \"step\": \"0.1\", \

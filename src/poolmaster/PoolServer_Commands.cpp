@@ -376,7 +376,7 @@ void p_pHPumpFR(StaticJsonDocument<250>  &_jsonsdoc) {
     PublishSettings();
 }
 void p_ChlPumpFR(StaticJsonDocument<250>  &_jsonsdoc) {
-    PhPump.SetFlowRate((double)_jsonsdoc[F("ChlPumpFR")] * 1000);
+    ChlPump.SetFlowRate((double)_jsonsdoc[F("ChlPumpFR")] * 1000);
     PoolDeviceManager.SavePreferences(DEVICE_CHL_PUMP);
     PublishSettings();
 }

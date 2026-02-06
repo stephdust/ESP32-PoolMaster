@@ -397,7 +397,7 @@ void TaskUpdateSuperVisor(void)
       int c = stream.readBytes(payload, ((contentLength > sizeof(payload)) ? sizeof(payload) : contentLength));
       Update.write(payload, c);
       _undownloadByte -= c;
-      delay(10); 
+      delay(50); 
     } else {
         delay(1);
     }
