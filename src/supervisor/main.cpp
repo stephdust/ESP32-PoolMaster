@@ -349,6 +349,7 @@ void TaskUpdateSuperVisor(void)
   sprintf(url, "http://%s%s",host,path);
   snprintf(local_sbuf,sizeof(local_sbuf),"Requesting URL: %s",url);
   Local_Logs_Dispatch(local_sbuf);
+  
   // begin http client
   if (!http.begin(url)){
     http.end();
@@ -360,7 +361,7 @@ void TaskUpdateSuperVisor(void)
   int code          = http.GET();
   contentLength     = http.getSize();
   
-  if (code != 200) { // 200=firmware found    Local_Logs_Dispatch("File received. Update PoolMaster...");
+  if (code != 200) { // 200=firmware found
     Local_Logs_Dispatch("File not found !!");
     snprintf(local_sbuf,sizeof(local_sbuf),"HTTP error: %d",http.errorToString(code).c_str());
     Local_Logs_Dispatch(local_sbuf);
@@ -370,29 +371,46 @@ void TaskUpdateSuperVisor(void)
 
   UpdateinProgress=1;
   Local_Logs_Dispatch("File received. Update PoolMaster...");
+  
+  // --- CORRECTIF 1 : ON COUPE MQTT ---
+  // On libère toute la puissance pour l'écriture en Flash
+  // Vérifie que ta variable s'appelle bien 'mqttClient' (ou adapte le nom)
+  if (mqttClient.connected()) {
+      Local_Logs_Dispatch("Disconnecting MQTT for stability...");
+      mqttClient.disconnect();
+      delay(200); // Petite pause pour laisser la connexion se fermer
+  }
+  // -----------------------------------
+
   snprintf(local_sbuf,sizeof(local_sbuf),"Start upload. File size is: %d bytes",contentLength);
   Local_Logs_Dispatch(local_sbuf);
   strcpy(barBuf, local_sbuf);
-
-/*
-    Update.writeStream(*http.getStreamPtr());  --> cause wifi crash
-    bool ok=Update.end(true);
-    onOTAEnd(ok);
-*/
 
   Stream& stream = *http.getStreamPtr();
   uint32_t _undownloadByte = contentLength;
   uint8_t payload[512] = { 0 };  // Buffer for flash data chunks
   int c;
+  
   Update.begin(contentLength);
   Update.onProgress(onOTAProgress);
+  
   while (_undownloadByte > 0) {
+    // --- CORRECTIF 2 : ON NOURRIT LE WATCHDOG ---
+    esp_task_wdt_reset(); 
+    // --------------------------------------------
+
     contentLength = stream.available();
     if(contentLength) {
-			int c = stream.readBytes(payload, ((contentLength > sizeof(payload)) ? sizeof(payload) : contentLength));
+      int c = stream.readBytes(payload, ((contentLength > sizeof(payload)) ? sizeof(payload) : contentLength));
       Update.write(payload, c);
       _undownloadByte -= c;
-      delay(10);
+      
+      // Le delay est utile, mais on peut le réduire légèrement si besoin
+      // On laisse 10ms pour laisser respirer le WiFi
+      delay(10); 
+    } else {
+        // Si pas de données dispos tout de suite, on attend un peu sans bloquer
+        delay(1);
     }
   }
   
@@ -402,6 +420,9 @@ void TaskUpdateSuperVisor(void)
   Local_Logs_Dispatch("Closing connection");
   UpdateinProgress=0;
   refreshTFT=true;
+  
+  // Note : Pas besoin de reconnecter MQTT ici, car le "onOTAEnd" va probablement
+  // déclencher un reboot de l'ESP32 s'il a réussi.
 }
 
 ///////////////// Update POOLMASTER ///////////////////

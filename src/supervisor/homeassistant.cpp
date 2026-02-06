@@ -1366,37 +1366,41 @@ void createHAEntities()
   ";
   createHAEntitie(entitytype, name, topic, JSEntity, JScommon, hatopic, commandtopic);}
   
- {char name[] = "pH Pump Flow Rate (L/s)";
+ {
+  char name[] = "pH Pump Flow Rate (L/h)";
   sprintf(topic, "%s/Set5", roottopic);
   char JSEntity[] = " \
-  \"command_template\": \"{ pHPumpFR: {{value}} }\", \
-  \"min\": \"1\", \
+  \"command_template\": \"{ \\\"pHPumpFR\\\": {{ value }} }\", \
+  \"min\": \"0.1\", \
   \"max\": \"5\", \
   \"mode\": \"slider\", \
   \"step\": \"0.1\", \
-  \"value_template\": \"{{ value_json.pHFR | float }}\", \
+  \"value_template\": \"{{ (value_json.pHFR | float) / 1000 }}\", \
   \"unique_id\": \"poolmaster_set_ph_flowrate\", \
-  \"unit_of_measurement\": \"l/s\", \
+  \"unit_of_measurement\": \"L/h\", \
   \"icon\": \"mdi:needle\", \
   \"entity_category\": \"config\", \
-  ";
-  createHAEntitie(entitytype, name, topic, JSEntity, JScommon, hatopic, commandtopic);}
-  
- {char name[] = "Chl Pump Flow Rate (L/s)";
+  "; 
+  createHAEntitie(entitytype, name, topic, JSEntity, JScommon, hatopic, commandtopic);
+}
+
+{
+  char name[] = "Chl Pump Flow Rate (L/h)";
   sprintf(topic, "%s/Set5", roottopic);
   char JSEntity[] = " \
-  \"command_template\": \"{ ChlPumpFR: {{value}} }\", \
-  \"min\": \"1\", \
+  \"command_template\": \"{ \\\"ChlPumpFR\\\": {{ value }} }\", \
+  \"min\": \"0.1\", \
   \"max\": \"5\", \
   \"mode\": \"slider\", \
   \"step\": \"0.1\", \
-  \"value_template\": \"{{ value_json.OrpFR | float }}\", \
+  \"value_template\": \"{{ (value_json.OrpFR | float) / 1000 }}\", \
   \"unique_id\": \"poolmaster_set_chl_flowrate\", \
-  \"unit_of_measurement\": \"l/s\", \
+  \"unit_of_measurement\": \"L/h\", \
   \"icon\": \"mdi:needle\", \
   \"entity_category\": \"config\", \
-  ";
-  createHAEntitie(entitytype, name, topic, JSEntity, JScommon, hatopic, commandtopic);}
+  "; 
+  createHAEntitie(entitytype, name, topic, JSEntity, JScommon, hatopic, commandtopic);
+}
   
  {char name[] = "Water Temperature Set Point";
   sprintf(topic, "%s/Set2", roottopic);

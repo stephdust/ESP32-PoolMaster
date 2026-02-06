@@ -320,8 +320,8 @@ Below are the Payloads/commands to publish on the "PoolTopicAPI" topic in Json f
 |{"pHTank":[20,100]} | call this function when the Acid tank is replaced or refilled. First parameter is the tank volume in Liters, second parameter is its percentage fill (100% when full)
 |{"ChlTank":[20,100]} | call this function when the Chlorine tank is replaced or refilled. First parameter is the tank volume in Liters, second parameter is its percentage fill (100% when full)
 |{"Relay":[1,1]} | call this generic command to actuate spare relays. Parameter 1 is the relay number (R1 in this example), parameter 2 is the relay state (ON in this example). This command is useful to use spare relays for additional features (lighting, etc). Available relay numbers are 1 and 2
-|{"pHPumpFR":1.5} | call this command to set pH pump flow rate un L/s. In this example 1.5L/s
-|{"ChlPumpFR":3} | call this command to set Chl pump flow rate un L/s. In this example 3L/s
+|{"pHPumpFR":1.5} | call this command to set pH pump flow rate un L/h. In this example 1.5L/h
+|{"ChlPumpFR":3} | call this command to set Chl pump flow rate un L/h. In this example 3L/h
 |{"RstpHCal":1} | call this command to reset the calibration coefficients of the pH probe
 |{"RstOrpCal":1} | call this command to reset the calibration coefficients of the Orp probe
 |{"RstPSICal":1} | call this command to reset the calibration coefficients of the pressure sensor

@@ -30,7 +30,7 @@ NB: all timings are in milliseconds
 #define NO_INTERLOCK 255  
 //#define INTERLOCK_REFERENCE 170  //Interlock object was passed as a reference Pump&
 
-#define DEFAULT_FLOWRATE 1.5 //default flow rate in Liters/hour
+#define DEFAULT_FLOWRATE 0.5 //default flow rate in Liters/hour
 #define DEFAULT_TANK_VOLUME 20.0 //default tank volume in Liters
 #define DEFAULT_TANK_FILL 100.0 //default tank fill in percentage (100% means full tank)
 
