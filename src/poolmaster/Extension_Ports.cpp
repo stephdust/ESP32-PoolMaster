@@ -3,7 +3,6 @@
 #include "Config.h"
 #include "PoolMaster.h"
 
-
 #if defined(_EXTENSIONS_)
 
 // *************************
@@ -39,7 +38,8 @@ struct ListExtensions knownI2C[] = {
     {"PCF8574",     0, 0x20 },  // PoolMaster StatusLights
     {"PCF8574A",    0, 0x38 },  // PoolMaster StatusLights
     {"SHT40",       0, 0x44 },  // ENV IV M5Stack = SHT40 + BMP280
-    {"ADS1115",     0, 0x48 },  // PoolMaster AnalogPoll
+    {"ADS1115",     0, INT_ADS1115_ADDR },  // PoolMaster AnalogPoll
+    {"EXT_ADS1115", 0, EXT_ADS1115_ADDR },  // PoolMaster Loulou74 board
     {"BMP280",      0, 0x76 },  // ENV IV M5Stack = SHT40 + BMP280
     {"BME680",      0, 0x77 },  // ENV Pro M5Stack
 };

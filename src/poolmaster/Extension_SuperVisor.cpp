@@ -156,8 +156,8 @@ void SuperVisor_LoadSettings(void *pvParameters)
     if (strlen(newSSID))
           WiFi.begin(newSSID, newPass);
     else  WiFi.reconnect();
-    MDNS.addService("http", "tcp", 80);
-    if (strlen(newHostname)) MDNS.begin(newHostname);  
+    // MDNS.addService("http", "tcp", 80);
+    //if (strlen(newHostname)) MDNS.begin(newHostname);  
     restartwifi = false;
   }
 
