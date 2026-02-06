@@ -229,7 +229,7 @@ void TFT_Measures(int posx, int posy, bool refreshTFT)
 
   index = 4;  // Orp
   value   = PMInfo["Orp"];
-  dvalue  = PMInfo["Orp"].as<double>();
+  dvalue  = fabs(PMInfo["Orp"].as<double>());
   if (refreshTFT) data[index].value = -100;
   if (value && data[index].value != dvalue) {
     data[index].value = dvalue;
@@ -247,7 +247,7 @@ void TFT_Measures(int posx, int posy, bool refreshTFT)
   if (refreshTFT) data[index].value = -100;
   if (value && data[index].value != dvalue) {
     data[index].value = dvalue;
-    sprintf(text, "%1.1f psi", dvalue);
+    sprintf(text, "%1.2f Bar", dvalue);
     if (data[index].line == -1) data[index].line = line++;
     if      (dvalue < 0.3) color = ST77XX_RED;
     else if (dvalue > 2.0) color = ST77XX_RED;
@@ -385,7 +385,6 @@ void TFT_DrawProgressBar(int x, int y, int l, int progress, bool firsttime)
   if (progress>99) progress = 100;  // fix garbage
   display.fillRoundRect(x+2, y+2, (l*progress)/100, 16, 90, ST77XX_BLUE);
 }
-
 
 void TFT_OTA()
 {
