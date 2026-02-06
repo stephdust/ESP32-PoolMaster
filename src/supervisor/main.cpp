@@ -427,11 +427,11 @@ void TaskUpdateSuperVisor(void)
 
 ///////////////// Update POOLMASTER ///////////////////
 ///////////////////////////////////////////////////////
+///////////////// Update POOLMASTER ///////////////////
+///////////////////////////////////////////////////////
 void TaskUpdatePoolMaster(void)
 {
   static UBaseType_t hwm=0;     // free stack size
-  //rtc_wdt_protect_off();
-  //rtc_wdt_disable();
   HTTPClient http;
   http.setReuse(false);
   char url[_LURL_];
@@ -440,6 +440,7 @@ void TaskUpdatePoolMaster(void)
   sprintf(url, "http://%s%s",host,path);
   snprintf(local_sbuf,sizeof(local_sbuf),"Requesting URL: %s",url);
   Local_Logs_Dispatch(local_sbuf);
+
   // begin http client
   if(!http.begin(url)){
       Local_Logs_Dispatch("Connection failed");
@@ -453,27 +454,44 @@ void TaskUpdatePoolMaster(void)
   if(code == 200){
     UpdateinProgress=1;
     Local_Logs_Dispatch("File received. Update PoolMaster...");
+    
+    // --- AJOUT SÉCURITÉ : COUPURE MQTT ---
+    // Vital pour ne pas perturber le flux Série vers le PoolMaster
+    if (mqttClient.connected()) {
+      Local_Logs_Dispatch("Disconnecting MQTT for Serial stability...");
+      mqttClient.disconnect();
+      delay(200);
+    }
+    // -------------------------------------
+
     bool result;
     snprintf(local_sbuf,sizeof(local_sbuf),"Start upload. File size is: %d bytes",contentLength);
     strcpy(barBuf, local_sbuf);
     Local_Logs_Dispatch(local_sbuf);
+    
     // Initialize ESP32Flasher
     ESP32Flasher espflasher;
-    // set callback to print progress
+    
     UpdateCounter=0;
     espflasher.setUpdateProgressCallback([](){
+      // On nourrit le watchdog ici aussi par sécurité, même si c'est un callback
+      esp_task_wdt_reset(); 
+      
       UpdateCounter++;
       UpdateinProgress = (float(UpdateCounter*1024)/contentLength)*100.0;
       snprintf(local_sbuf,sizeof(local_sbuf),"PoolMaster update %d%%",UpdateinProgress);
       strcpy(barBuf, local_sbuf);
       Local_Logs_Dispatch(local_sbuf,1,"\r");
     });
-    espflasher.espFlasherInit();//sets up Serial communication to another esp32
+    
+    espflasher.espFlasherInit();
     int connect_status = espflasher.espConnect();
+    
     if (connect_status != SUCCESS) 
       Local_Logs_Dispatch("Cannot connect to target");
     else {
       Local_Logs_Dispatch("Connected to target");
+      // C'est ici que ça bosse dur (lecture WiFi -> écriture Série)
       espflasher.espFlashBinStream(*http.getStreamPtr(),contentLength);
     }
   }
@@ -486,6 +504,9 @@ void TaskUpdatePoolMaster(void)
   UpdateinProgress=0;
   refreshTFT=true;
   stack_mon(hwm);
+  
+  // Note: Le Supervisor rebootera probablement manuellement ou via watchdog après ça,
+  // donc pas besoin de reconnecter MQTT.
 }
 
 void TaskUpdateNextion(void)
@@ -493,7 +514,7 @@ void TaskUpdateNextion(void)
   Local_Logs_Dispatch("Nextion Update Requested");
   Local_Logs_Dispatch("Stopping PoolMaster...");
   pinMode(ENPin, OUTPUT);
-  digitalWrite(ENPin, LOW);
+  digitalWrite(ENPin, LOW); // On éteint le PoolMaster pour éviter les parasites sur le bus série
   Local_Logs_Dispatch("Upgrading Nextion ...");
 
   HTTPClient http;
@@ -518,31 +539,42 @@ void TaskUpdateNextion(void)
   if(code == 200){
     UpdateinProgress=1;
     Local_Logs_Dispatch("File received. Update Nextion...");
+    
+    // --- AJOUT SÉCURITÉ : COUPURE MQTT ---
+    if (mqttClient.connected()) {
+      Local_Logs_Dispatch("Disconnecting MQTT for Nextion stability...");
+      mqttClient.disconnect();
+      delay(200);
+    }
+    // -------------------------------------
+
     bool result;
-    // initialize ESPNexUpload
     ESPNexUpload nextion(115200);
-    // set callback to print progress
+    
     UpdateCounter=0;
     nextion.setUpdateProgressCallback([](){
+      esp_task_wdt_reset(); // Sécurité Watchdog
+      
       UpdateCounter++;
       UpdateinProgress = (float(UpdateCounter*2048)/contentLength)*100.0;
       snprintf(local_sbuf,sizeof(local_sbuf),"Nextion update %d%%",UpdateinProgress);
       strcpy(barBuf, local_sbuf);
       Local_Logs_Dispatch(local_sbuf,1,"\r");
     });
-    // prepare upload: setup serial connection, send update command and send the expected update size
+    
     result = nextion.prepareUpload(contentLength);
     if(!result){
         snprintf(local_sbuf,sizeof(local_sbuf),"Error: %s",nextion.statusMessage.c_str());
         Local_Logs_Dispatch(local_sbuf);
-        //Serial.println("Error: " + nextion.statusMessage);
     } 
     else {
       snprintf(local_sbuf,sizeof(local_sbuf),"Start upload. File size is: %d bytes",contentLength);
       strcpy(barBuf, local_sbuf);
       Local_Logs_Dispatch(local_sbuf);
-      // Upload the received byte Stream to the nextion
+      
+      // Upload
       result = nextion.upload(*http.getStreamPtr());
+      
       if(result)
         Local_Logs_Dispatch("Successfully updated Nextion");
       else {
@@ -550,7 +582,6 @@ void TaskUpdateNextion(void)
         Local_Logs_Dispatch(local_sbuf);
       }
 
-      // end: wait(delay) for the nextion to finish the update process, send nextion reset command and end the serial connection to the nextion
       nextion.end();
       pinMode(NEXT_RX,INPUT);
       pinMode(NEXT_TX,INPUT);
@@ -560,7 +591,6 @@ void TaskUpdateNextion(void)
     }
   }
   else {
-    // else print http error
     snprintf(local_sbuf,sizeof(local_sbuf),"HTTP error: %d",http.errorToString(code).c_str());
     Local_Logs_Dispatch(local_sbuf);
   }
@@ -570,9 +600,6 @@ void TaskUpdateNextion(void)
   Local_Logs_Dispatch("Starting PoolMaster ...");
   digitalWrite(ENPin, HIGH);
   pinMode(ENPin, INPUT);
-  
-  //rtc_wdt_enable();
-  //rtc_wdt_protect_on();
 }
 
 void TelnetToTaskUpdatePoolMaster()
