@@ -350,18 +350,16 @@ void TaskUpdateSuperVisor(void)
   snprintf(local_sbuf,sizeof(local_sbuf),"Requesting URL: %s",url);
   Local_Logs_Dispatch(local_sbuf);
   
-  // begin http client
   if (!http.begin(url)){
     http.end();
     Local_Logs_Dispatch("Connection failed");
     return;
   }
 
-  // This will send the (get) request to the server
   int code          = http.GET();
   contentLength     = http.getSize();
   
-  if (code != 200) { // 200=firmware found
+  if (code != 200) { 
     Local_Logs_Dispatch("File not found !!");
     snprintf(local_sbuf,sizeof(local_sbuf),"HTTP error: %d",http.errorToString(code).c_str());
     Local_Logs_Dispatch(local_sbuf);
@@ -372,15 +370,13 @@ void TaskUpdateSuperVisor(void)
   UpdateinProgress=1;
   Local_Logs_Dispatch("File received. Update PoolMaster...");
   
-  // --- CORRECTIF 1 : ON COUPE MQTT ---
-  // On libère toute la puissance pour l'écriture en Flash
-  // Vérifie que ta variable s'appelle bien 'mqttClient' (ou adapte le nom)
-  if (mqttClient.connected()) {
+  // --- CORRECTION MAJUSCULE ICI ---
+  if (MqttClient.connected()) {
       Local_Logs_Dispatch("Disconnecting MQTT for stability...");
-      mqttClient.disconnect();
-      delay(200); // Petite pause pour laisser la connexion se fermer
+      MqttClient.disconnect();
+      delay(200); 
   }
-  // -----------------------------------
+  // -------------------------------
 
   snprintf(local_sbuf,sizeof(local_sbuf),"Start upload. File size is: %d bytes",contentLength);
   Local_Logs_Dispatch(local_sbuf);
@@ -388,41 +384,31 @@ void TaskUpdateSuperVisor(void)
 
   Stream& stream = *http.getStreamPtr();
   uint32_t _undownloadByte = contentLength;
-  uint8_t payload[512] = { 0 };  // Buffer for flash data chunks
+  uint8_t payload[512] = { 0 }; 
   int c;
   
   Update.begin(contentLength);
   Update.onProgress(onOTAProgress);
   
   while (_undownloadByte > 0) {
-    // --- CORRECTIF 2 : ON NOURRIT LE WATCHDOG ---
     esp_task_wdt_reset(); 
-    // --------------------------------------------
-
     contentLength = stream.available();
     if(contentLength) {
       int c = stream.readBytes(payload, ((contentLength > sizeof(payload)) ? sizeof(payload) : contentLength));
       Update.write(payload, c);
       _undownloadByte -= c;
-      
-      // Le delay est utile, mais on peut le réduire légèrement si besoin
-      // On laisse 10ms pour laisser respirer le WiFi
       delay(10); 
     } else {
-        // Si pas de données dispos tout de suite, on attend un peu sans bloquer
         delay(1);
     }
   }
   
-  bool ok=Update.end(); //If all bytes are written this call will write the config to eboot
+  bool ok=Update.end(); 
   onOTAEnd(ok);
   http.end();
   Local_Logs_Dispatch("Closing connection");
   UpdateinProgress=0;
   refreshTFT=true;
-  
-  // Note : Pas besoin de reconnecter MQTT ici, car le "onOTAEnd" va probablement
-  // déclencher un reboot de l'ESP32 s'il a réussi.
 }
 
 ///////////////// Update POOLMASTER ///////////////////
@@ -431,7 +417,7 @@ void TaskUpdateSuperVisor(void)
 ///////////////////////////////////////////////////////
 void TaskUpdatePoolMaster(void)
 {
-  static UBaseType_t hwm=0;     // free stack size
+  static UBaseType_t hwm=0;    
   HTTPClient http;
   http.setReuse(false);
   char url[_LURL_];
@@ -441,13 +427,11 @@ void TaskUpdatePoolMaster(void)
   snprintf(local_sbuf,sizeof(local_sbuf),"Requesting URL: %s",url);
   Local_Logs_Dispatch(local_sbuf);
 
-  // begin http client
   if(!http.begin(url)){
       Local_Logs_Dispatch("Connection failed");
     return;
   }
 
-  // This will send the (get) request to the server
   int code          = http.GET();
   contentLength     = http.getSize();
         
@@ -455,43 +439,35 @@ void TaskUpdatePoolMaster(void)
     UpdateinProgress=1;
     Local_Logs_Dispatch("File received. Update PoolMaster...");
     
-    // --- AJOUT SÉCURITÉ : COUPURE MQTT ---
-    // Vital pour ne pas perturber le flux Série vers le PoolMaster
-    if (mqttClient.connected()) {
+    // --- CORRECTION MAJUSCULE ICI ---
+    if (MqttClient.connected()) {
       Local_Logs_Dispatch("Disconnecting MQTT for Serial stability...");
-      mqttClient.disconnect();
+      MqttClient.disconnect();
       delay(200);
     }
-    // -------------------------------------
+    // -------------------------------
 
     bool result;
     snprintf(local_sbuf,sizeof(local_sbuf),"Start upload. File size is: %d bytes",contentLength);
     strcpy(barBuf, local_sbuf);
     Local_Logs_Dispatch(local_sbuf);
     
-    // Initialize ESP32Flasher
     ESP32Flasher espflasher;
-    
     UpdateCounter=0;
     espflasher.setUpdateProgressCallback([](){
-      // On nourrit le watchdog ici aussi par sécurité, même si c'est un callback
       esp_task_wdt_reset(); 
-      
       UpdateCounter++;
       UpdateinProgress = (float(UpdateCounter*1024)/contentLength)*100.0;
       snprintf(local_sbuf,sizeof(local_sbuf),"PoolMaster update %d%%",UpdateinProgress);
       strcpy(barBuf, local_sbuf);
       Local_Logs_Dispatch(local_sbuf,1,"\r");
     });
-    
     espflasher.espFlasherInit();
     int connect_status = espflasher.espConnect();
-    
     if (connect_status != SUCCESS) 
       Local_Logs_Dispatch("Cannot connect to target");
     else {
       Local_Logs_Dispatch("Connected to target");
-      // C'est ici que ça bosse dur (lecture WiFi -> écriture Série)
       espflasher.espFlashBinStream(*http.getStreamPtr(),contentLength);
     }
   }
@@ -504,9 +480,6 @@ void TaskUpdatePoolMaster(void)
   UpdateinProgress=0;
   refreshTFT=true;
   stack_mon(hwm);
-  
-  // Note: Le Supervisor rebootera probablement manuellement ou via watchdog après ça,
-  // donc pas besoin de reconnecter MQTT.
 }
 
 void TaskUpdateNextion(void)
@@ -514,7 +487,7 @@ void TaskUpdateNextion(void)
   Local_Logs_Dispatch("Nextion Update Requested");
   Local_Logs_Dispatch("Stopping PoolMaster...");
   pinMode(ENPin, OUTPUT);
-  digitalWrite(ENPin, LOW); // On éteint le PoolMaster pour éviter les parasites sur le bus série
+  digitalWrite(ENPin, LOW); 
   Local_Logs_Dispatch("Upgrading Nextion ...");
 
   HTTPClient http;
@@ -531,37 +504,32 @@ void TaskUpdateNextion(void)
     return;
     }
 
-  // This will send the (get) request to the server
   int code          = http.GET();
   contentLength     = http.getSize();
         
-  // Update the nextion display
   if(code == 200){
     UpdateinProgress=1;
     Local_Logs_Dispatch("File received. Update Nextion...");
     
-    // --- AJOUT SÉCURITÉ : COUPURE MQTT ---
-    if (mqttClient.connected()) {
+    // --- CORRECTION MAJUSCULE ICI ---
+    if (MqttClient.connected()) {
       Local_Logs_Dispatch("Disconnecting MQTT for Nextion stability...");
-      mqttClient.disconnect();
+      MqttClient.disconnect();
       delay(200);
     }
-    // -------------------------------------
+    // -------------------------------
 
     bool result;
     ESPNexUpload nextion(115200);
-    
     UpdateCounter=0;
     nextion.setUpdateProgressCallback([](){
-      esp_task_wdt_reset(); // Sécurité Watchdog
-      
+      esp_task_wdt_reset(); 
       UpdateCounter++;
       UpdateinProgress = (float(UpdateCounter*2048)/contentLength)*100.0;
       snprintf(local_sbuf,sizeof(local_sbuf),"Nextion update %d%%",UpdateinProgress);
       strcpy(barBuf, local_sbuf);
       Local_Logs_Dispatch(local_sbuf,1,"\r");
     });
-    
     result = nextion.prepareUpload(contentLength);
     if(!result){
         snprintf(local_sbuf,sizeof(local_sbuf),"Error: %s",nextion.statusMessage.c_str());
@@ -571,21 +539,16 @@ void TaskUpdateNextion(void)
       snprintf(local_sbuf,sizeof(local_sbuf),"Start upload. File size is: %d bytes",contentLength);
       strcpy(barBuf, local_sbuf);
       Local_Logs_Dispatch(local_sbuf);
-      
-      // Upload
       result = nextion.upload(*http.getStreamPtr());
-      
       if(result)
         Local_Logs_Dispatch("Successfully updated Nextion");
       else {
         snprintf(local_sbuf,sizeof(local_sbuf),"Error updating Nextion: %s",nextion.statusMessage.c_str());
         Local_Logs_Dispatch(local_sbuf);
       }
-
       nextion.end();
       pinMode(NEXT_RX,INPUT);
       pinMode(NEXT_TX,INPUT);
-
       UpdateinProgress=0;
       refreshTFT=true;
     }
@@ -594,7 +557,6 @@ void TaskUpdateNextion(void)
     snprintf(local_sbuf,sizeof(local_sbuf),"HTTP error: %d",http.errorToString(code).c_str());
     Local_Logs_Dispatch(local_sbuf);
   }
-
   http.end();
   Local_Logs_Dispatch("Closing connection");
   Local_Logs_Dispatch("Starting PoolMaster ...");
