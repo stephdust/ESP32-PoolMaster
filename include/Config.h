@@ -8,7 +8,8 @@
 //#define NEXTION_V1
 #define NEXTION_V2
 
-#define DEBUG_LEVEL DBG_INFO// Possible levels : DBG_NONE/DBG_ERROR/DBG_WARNING/DBG_INFO/DBG_DEBUG/DBG_VERBOSE
+#define DEBUG_LEVEL DBG_DEBUG// Possible levels : DBG_NONE/DBG_ERROR/DBG_WARNING/DBG_INFO/DBG_DEBUG/DBG_VERBOSE
+//#define DEBUG_LEVEL DBG_INFO// Possible levels : DBG_NONE/DBG_ERROR/DBG_WARNING/DBG_INFO/DBG_DEBUG/DBG_VERBOSE
 
 //Version of config stored in EEPROM
 //Random value. Change this value (to any other value) to revert the config to default values

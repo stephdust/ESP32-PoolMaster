@@ -264,8 +264,10 @@ void setup()
     PMConfig.initParam(ORPCALIBCOEFFS0,     "OrpCalibCoeffs0",        (double)129.2);
     PMConfig.initParam(ORPCALIBCOEFFS1,     "OrpCalibCoeffs1",        (double)384.1);
   }
-  PMConfig.initParam(PSICALIBCOEFFS0,     "PSICalibCoeffs0",        (double)0.377923399);
-  PMConfig.initParam(PSICALIBCOEFFS1,     "PSICalibCoeffs1",        (double)-0.17634473);
+  //PMConfig.initParam(PSICALIBCOEFFS0,     "PSICalibCoeffs0",        (double)0.377923399);
+  //PMConfig.initParam(PSICALIBCOEFFS1,     "PSICalibCoeffs1",        (double)-0.17634473);
+  PMConfig.initParam(PSICALIBCOEFFS0,     "PSICalibCoeffs0",        (double)2.11764);
+  PMConfig.initParam(PSICALIBCOEFFS1,     "PSICalibCoeffs1",        (double)-0.504);
   PMConfig.initParam(PH_KP,               "PhKp",                   (double)2000000.0);
   PMConfig.initParam(PH_KI,               "PhKi",                   (double)0.0);
   PMConfig.initParam(PH_KD,               "PhKd",                   (double)0.0);

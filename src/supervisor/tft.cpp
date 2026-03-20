@@ -120,12 +120,12 @@ void TFT_Measures(int posx, int posy, bool refreshTFT)
   static val_mesures data[] = {
     {"Air Ext:", -100, -1},
     {"Air Int:", -100, -1},
-    {"Water:",   -100, -1},
+    {"Water:"  , -100, -1}, // 2 temperature
     {"pH:",      -100, -1},
     {"Orp:",     -100, -1},
-    {"Water:",   -100, -1},
+    {"Water:"  , -100, -1}, // 5 pressure
     {"WM:",      -100, -1},
-    {"Air Pr:",  -100, -1},
+    {"Air Int:", -100, -1}, // 7 pressure
   };
 
   char *p=0;
@@ -213,6 +213,20 @@ void TFT_Measures(int posx, int posy, bool refreshTFT)
     TFT_Measures_render(posx, posy, data[index].line, data[index].label, text, color);
   }
 
+  index = 5;  // Water Pressure
+  value   = PMInfo["Water Pressure"];
+  dvalue  = PMInfo["Water Pressure"].as<double>();
+  if (refreshTFT) data[index].value = -100;
+  if (value && data[index].value != dvalue) {
+    data[index].value = dvalue;
+    sprintf(text, "%.0f mb", dvalue);
+    if (data[index].line == -1) data[index].line = line++;
+    if      (dvalue < 300) color = ST77XX_RED;
+    else if (dvalue > 1800) color = ST77XX_RED;
+    else                   color = ST77XX_GREEN;
+    TFT_Measures_render(posx, posy, data[index].line, data[index].label, text, color);
+  }
+
   index = 3;  // pH
   value   = PMInfo["pH"];
   dvalue  = PMInfo["pH"].as<double>();
@@ -229,7 +243,7 @@ void TFT_Measures(int posx, int posy, bool refreshTFT)
 
   index = 4;  // Orp
   value   = PMInfo["Orp"];
-  dvalue  = fabs(PMInfo["Orp"].as<double>());
+  dvalue  = PMInfo["Orp"].as<double>();
   if (refreshTFT) data[index].value = -100;
   if (value && data[index].value != dvalue) {
     data[index].value = dvalue;
@@ -241,19 +255,6 @@ void TFT_Measures(int posx, int posy, bool refreshTFT)
     TFT_Measures_render(posx, posy, data[index].line, data[index].label, text, color);
   }
 
-  index = 5;  // Water Pressure
-  value   = PMInfo["PSI"];
-  dvalue  = PMInfo["PSI"].as<double>();
-  if (refreshTFT) data[index].value = -100;
-  if (value && data[index].value != dvalue) {
-    data[index].value = dvalue;
-    sprintf(text, "%1.2f Bar", dvalue);
-    if (data[index].line == -1) data[index].line = line++;
-    if      (dvalue < 0.3) color = ST77XX_RED;
-    else if (dvalue > 2.0) color = ST77XX_RED;
-    else                   color = ST77XX_GREEN;
-    TFT_Measures_render(posx, posy, data[index].line, data[index].label, text, color);
-  }
 
   index = 6;  // Water Meter Counter in liter
   value = PMInfo["WaterMeter"];

@@ -228,7 +228,7 @@ void TFAVenice_RF433T_Values(char* buffer)
 {
     if (tfaGPIO > 0)
         //sprintf(buffer, "GPIO=%d", tfaGPIO);
-        sprintf(buffer, "433Mhz");
+        sprintf(buffer, "F=433Mhz, G=%d T=%d", tfaGPIO, int(PMData.WaterTemp*100));
     else sprintf(buffer, "none");
 }
 
@@ -237,6 +237,7 @@ void TFAVenicePubMQTT()
     // Hey MQTT
     DynamicJsonDocument root(1024);
     root["GPIO"] = tfaGPIO;
+    root["Send"] = int(PMData.WaterTemp*100);
     char topic[48];
     const char *roottopic = PMConfig.get<const char*>(MQTT_TOPIC);
     if (strcmp(roottopic, "") == 0) return;
