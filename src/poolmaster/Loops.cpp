@@ -19,6 +19,7 @@ static ADS1115Scanner adc_ext(EXT_ADS1115_ADDR); // 0x49
 static float ph_sensor_value;     // pH sensor current value
 static float orp_sensor_value;    // ORP sensor current value
 static float psi_sensor_value;    // PSI sensor current value
+float rfu_sensor_value = 0.0;     // RFU sensor current value
 
 // Signal filtering library sample buffers
 static RunningMedian samples_WTemp = RunningMedian(11);
@@ -102,8 +103,12 @@ void AnalogPoll(void *pvParameters)
           orp_sensor_value = adc_int.readFilter(0) ;    // ORP sensor current value
           ph_sensor_value  = adc_int.readFilter(1) ;    // pH sensor current value
           psi_sensor_value = adc_int.readFilter(2) ;    // psi sensor current value
+          rfu_sensor_value = adc_int.readFilter(3) ;    // rfu sensor current value
         }
-        else psi_sensor_value = adc_int.readFilter(0) ;    // psi sensor current value
+        else {
+          psi_sensor_value = adc_int.readFilter(0) ;    // psi sensor current value
+//          rfu_sensor_value = adc_int.readFilter(1) ;    // rfu sensor current value
+        }
         adc_int.start();
     }
 
@@ -172,8 +177,8 @@ void AnalogPoll(void *pvParameters)
     PMData.PSIValue = (samples_PSI.getAverage(5)*0.1875/1000.)*PMConfig.get<double>(PSICALIBCOEFFS0) + PMConfig.get<double>(PSICALIBCOEFFS1);
     PMData.PSIValue = (PMData.PSIValue < 0)? 0 : PMData.PSIValue;
 
-    Debug.print(DBG_DEBUG,"pH: %5.0f - %4.2f - ORP: %5.0f - %3.0fmV - PSI: %5.0f - %4.2fBar\r",
-    ph_sensor_value,PMData.PhValue,orp_sensor_value,PMData.OrpValue,psi_sensor_value,PMData.PSIValue);
+    Debug.print(DBG_DEBUG,"pH: %5.0f - %4.2f - ORP: %5.0f - %3.0fmV - PSI: %5.0f - %4.2fBar - RFU: %5.3f\r",
+    ph_sensor_value,PMData.PhValue,orp_sensor_value,PMData.OrpValue,psi_sensor_value,PMData.PSIValue, rfu_sensor_value);
 
     unlockI2C();
 

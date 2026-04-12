@@ -1435,7 +1435,7 @@ let homeassistantcreate = "off";
     <tr><td>&nbsp</td></tr>
     <tr><th align="left">WaterMeter:</th></tr>
     <tr>
-      <td>GPIO (0=off, 15):</td>
+      <td>GPIO (0=off, 35):</td>
       <td><input type="text" name="WaterMeter GPIO" id="WaterMeter GPIO" size=22></td>
     </tr>
     <tr>
@@ -1453,7 +1453,7 @@ let homeassistantcreate = "off";
     <tr><td>&nbsp</td></tr>
     <tr><th align="left">TFA Venice:</th></tr>
     <tr>
-      <td>GPIO (0=off, 5):</td>
+      <td>GPIO (0=off, 14):</td>
       <td><input type="text" name="TFA_Venice" id="TFA_Venice" size=22></td>
     </tr>
     </table></p>

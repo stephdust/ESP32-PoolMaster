@@ -20,7 +20,6 @@ volatile int      myWMGPIO          = 0;    // disabled by default, suggest GPIO
 extern void PublishTopic(const char*, JsonDocument&);
 void WaterMeterPulsePubMQTT(void)
 {
-    return;
     static double oldvalues = -1;
     double n = myWaterMeterCounter+myWMLiterPerPulse+myWMDebounce+myWMGPIO;
     if (n != oldvalues) oldvalues=n;
@@ -37,7 +36,7 @@ void WaterMeterPulsePubMQTT(void)
     if (strcmp(roottopic, "") == 0) return;
     if (strcmp(roottopic, "none") == 0) return;
     sprintf(topic, "%s/%s", roottopic, myWaterMeterPulse.name);
-    PublishTopic(topic, root);
+ //   PublishTopic(topic, root);
 }
 
 void WaterMeterPulseValues(char* buffer)

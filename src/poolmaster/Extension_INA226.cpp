@@ -35,26 +35,27 @@ void INA226_0x40_SaveMeasures (void *pvParameters)
     DynamicJsonDocument root(1024);
 
     char value[15];
-    sprintf(value, "%.3f", shuntVoltage_mV);
+  /*  sprintf(value, "%.1f", shuntVoltage_mV);
     root["shuntVoltage_mV"] = value;
-    sprintf(value, "%.3f", busVoltage_V);
-    root["busVoltage_V"]    = value;
-    sprintf(value, "%.3f", current_mA);
+    sprintf(value, "%.1f", busVoltage_V);
+    root["busVoltage_V"]    = value;*/
+    sprintf(value, "%.1f", current_mA);
     root["current_mA"]      = value;
-    sprintf(value, "%.3f", power_mW);
+    sprintf(value, "%.1f", power_mW);
     root["power_mW"]        = value;
-    sprintf(value, "%.3f", loadVoltage_V);
+    sprintf(value, "%.1f", loadVoltage_V);
     root["loadVoltage_V"]   = value;
 
     char topic[50];
     const char *roottopic = PMConfig.get<const char*>(MQTT_TOPIC);
     sprintf(topic, "%s/%s", roottopic, INA226_0x40.name);
-    PublishTopic(topic, root);
+ //   PublishTopic(topic, root);
 }
 
 void INA226_0x40_Values(char* buffer)
 {
-    sprintf(buffer, "sV=%.3fmv bV=%.3fV C=%.3fmA P=%.3fmW lV=%.3fV", shuntVoltage_mV, busVoltage_V, current_mA, power_mW, loadVoltage_V);
+    //sprintf(buffer, "sV=%.1fmV bV=%.1fV C=%.1fmA P=%.1fmW lV=%.1fV", shuntVoltage_mV, busVoltage_V, current_mA, power_mW, loadVoltage_V);
+    sprintf(buffer, "C=%.1fmA P=%.1fmW V=%.1fV", current_mA, power_mW, loadVoltage_V);
 }
 
 void INA226_0x40_Task(void *pvParameters)
@@ -89,7 +90,7 @@ ExtensionStruct INA226_0x40_Init(char *name, int IO)
 
     INA226_0x40.name                = name;
     INA226_0x40.Task                = INA226_0x40_Task;
-    INA226_0x40.frequency           = 1000;     // Update values every xxx msecs.
+    INA226_0x40.frequency           = 5000;     // Update values every xxx msecs.
     INA226_0x40.LoadSettings        = 0;
     INA226_0x40.SaveSettings        = 0;
     INA226_0x40.LoadMeasures        = 0;
